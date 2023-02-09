@@ -1,16 +1,13 @@
-### Hi there 👋
+### Olá  👋
 
-<!--
-**Railincio/Railincio** is a ✨ _special_ ✨ repository because its `README.md` (this file) appears on your GitHub profile.
+![Railincio's GitHub stats](https://github-readme-stats.vercel.app/api?username=Railincio&show_icons=true&theme=tokyonight
+)
 
-Here are some ideas to get you started:
 
-- 🔭 I’m currently working on ...
-- 🌱 I’m currently learning ...
-- 👯 I’m looking to collaborate on ...
-- 🤔 I’m looking for help with ...
-- 💬 Ask me about ...
-- 📫 How to reach me: ...
-- 😄 Pronouns: ...
-- ⚡ Fun fact: ...
--->
+## Técnologias que estou especializando no momento:
+<div style="display: inline_block"><br/>
+    <img align="center" alt="java" src= "https://img.shields.io/badge/Java-ED8B00?style=for-the-badge&logo=java&logoColor=white" />
+    </div>
+    <img align="center" alt="office" src= "https://img.shields.io/badge/Microsoft_Office-D83B01?style=for-the-badge&logo=microsoft-office&logoColor=white" >
+    <gif align="center" alt="astronauta" src= "(https://dribbble.com/shots/3798124-astronaut)" >
+
