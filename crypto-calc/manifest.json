@@ -1,0 +1,24 @@
+{
+  "name": "Crypto Stop Loss",
+  "short_name": "Crypto Stop",
+  "description": "Calculadora de Stop Limit e Stop Loss para criptomoedas",
+  "start_url": "/crypto-calc/",
+  "display": "standalone",
+  "background_color": "#0f0f1a",
+  "theme_color": "#0f0f1a",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
