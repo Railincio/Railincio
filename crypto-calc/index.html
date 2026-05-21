@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Crypto Stop" />
+  <meta name="theme-color" content="#0f0f1a" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+  <title>Crypto Stop Loss</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background: #0f0f1a;
+      color: #e0e0f0;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", sans-serif;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: env(safe-area-inset-top, 48px) 20px env(safe-area-inset-bottom, 24px);
+    }
+
+    header {
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    header h1 {
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      background: linear-gradient(135deg, #a78bfa, #60a5fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    header p {
+      font-size: 12px;
+      color: #5a5a7a;
+      margin-top: 4px;
+    }
+
+    .card {
+      background: #1a1a2e;
+      border: 1px solid #2a2a4a;
+      border-radius: 20px;
+      padding: 24px 20px;
+      width: 100%;
+      max-width: 420px;
+      margin-bottom: 16px;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: #6b6b9b;
+      margin-bottom: 10px;
+    }
+
+    .input-row {
+      display: flex;
+      align-items: center;
+      background: #0f0f1a;
+      border: 1.5px solid #2a2a4a;
+      border-radius: 14px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .input-row:focus-within {
+      border-color: #a78bfa;
+    }
+
+    .input-row span {
+      padding: 0 14px;
+      font-size: 16px;
+      color: #5a5a7a;
+      font-weight: 500;
+    }
+
+    .input-row input {
+      flex: 1;
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #e0e0f0;
+      font-size: 22px;
+      font-weight: 600;
+      padding: 16px 0 16px 4px;
+      width: 100%;
+    }
+
+    .input-row input::placeholder {
+      color: #3a3a5a;
+    }
+
+    .clear-btn {
+      background: none;
+      border: none;
+      color: #5a5a7a;
+      font-size: 20px;
+      padding: 0 14px;
+      cursor: pointer;
+      display: none;
+    }
+
+    .clear-btn.visible {
+      display: block;
+    }
+
+    .percentages {
+      display: flex;
+      gap: 8px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .pct-chip {
+      background: #0f0f1a;
+      border: 1.5px solid #2a2a4a;
+      border-radius: 20px;
+      padding: 6px 14px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #6b6b9b;
+      cursor: pointer;
+      transition: all 0.15s;
+      user-select: none;
+    }
+
+    .pct-chip.active {
+      border-color: #a78bfa;
+      color: #a78bfa;
+      background: #1e1640;
+    }
+
+    .results-card {
+      background: #1a1a2e;
+      border: 1px solid #2a2a4a;
+      border-radius: 20px;
+      width: 100%;
+      max-width: 420px;
+      overflow: hidden;
+    }
+
+    .section-title {
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      padding: 14px 20px 6px;
+    }
+
+    .section-title.gain {
+      color: #34d399;
+    }
+
+    .section-title.loss {
+      color: #f87171;
+    }
+
+    .result-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 20px;
+      border-top: 1px solid #1e1e38;
+      transition: background 0.15s;
+    }
+
+    .result-row:active {
+      background: #111128;
+    }
+
+    .result-row .label {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .badge {
+      font-size: 11px;
+      font-weight: 700;
+      padding: 3px 9px;
+      border-radius: 20px;
+      min-width: 52px;
+      text-align: center;
+    }
+
+    .badge.gain {
+      background: #0d2e22;
+      color: #34d399;
+    }
+
+    .badge.loss {
+      background: #2e0d0d;
+      color: #f87171;
+    }
+
+    .row-desc {
+      font-size: 12px;
+      color: #5a5a7a;
+    }
+
+    .result-value {
+      font-size: 17px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+    }
+
+    .result-value.gain {
+      color: #34d399;
+    }
+
+    .result-value.loss {
+      color: #f87171;
+    }
+
+    .result-value.empty {
+      color: #3a3a5a;
+      font-weight: 400;
+      font-size: 14px;
+    }
+
+    .copy-toast {
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom, 24px) + 16px);
+      left: 50%;
+      transform: translateX(-50%) translateY(80px);
+      background: #a78bfa;
+      color: #fff;
+      font-size: 13px;
+      font-weight: 600;
+      padding: 10px 22px;
+      border-radius: 30px;
+      opacity: 0;
+      transition: all 0.3s ease;
+      pointer-events: none;
+      z-index: 999;
+      white-space: nowrap;
+    }
+
+    .copy-toast.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+
+    .divider {
+      height: 1px;
+      background: #2a2a4a;
+      margin: 0;
+    }
+
+    .disclaimer {
+      width: 100%;
+      max-width: 420px;
+      text-align: center;
+      font-size: 10px;
+      color: #3a3a5a;
+      margin-top: 20px;
+      line-height: 1.6;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>Crypto Stop Loss</h1>
+    <p>Calculadora de Stop Limit &amp; Stop Loss</p>
+  </header>
+
+  <div class="card">
+    <div class="input-group">
+      <label>Preço de compra</label>
+      <div class="input-row">
+        <span>$</span>
+        <input
+          id="priceInput"
+          type="number"
+          inputmode="decimal"
+          placeholder="0,00000000"
+          step="any"
+          autocomplete="off"
+          oninput="onPriceInput()"
+        />
+        <button class="clear-btn" id="clearBtn" onclick="clearInput()">&#x2715;</button>
+      </div>
+    </div>
+
+    <div class="percentages">
+      <div class="pct-chip active" data-pct="2" onclick="togglePct(this)">± 2%</div>
+      <div class="pct-chip active" data-pct="4" onclick="togglePct(this)">± 4%</div>
+      <div class="pct-chip active" data-pct="6" onclick="togglePct(this)">± 6%</div>
+      <div class="pct-chip" data-pct="8" onclick="togglePct(this)">± 8%</div>
+      <div class="pct-chip" data-pct="10" onclick="togglePct(this)">± 10%</div>
+      <div class="pct-chip" data-pct="15" onclick="togglePct(this)">± 15%</div>
+      <div class="pct-chip" data-pct="20" onclick="togglePct(this)">± 20%</div>
+    </div>
+  </div>
+
+  <div class="results-card" id="resultsCard">
+    <div class="section-title gain">Stop Limit (alta)</div>
+    <div id="gainRows"></div>
+    <div class="divider"></div>
+    <div class="section-title loss">Stop Loss (queda)</div>
+    <div id="lossRows"></div>
+  </div>
+
+  <div class="disclaimer">
+    Toque em qualquer valor para copiar.<br/>
+    Não constitui aconselhamento financeiro.
+  </div>
+
+  <div class="copy-toast" id="toast">Copiado!</div>
+
+  <script>
+    let activePcts = new Set([2, 4, 6]);
+
+    function onPriceInput() {
+      const val = document.getElementById('priceInput').value;
+      const clearBtn = document.getElementById('clearBtn');
+      clearBtn.classList.toggle('visible', val.length > 0);
+      render();
+    }
+
+    function clearInput() {
+      document.getElementById('priceInput').value = '';
+      document.getElementById('clearBtn').classList.remove('visible');
+      render();
+    }
+
+    function togglePct(el) {
+      const pct = parseInt(el.dataset.pct);
+      if (activePcts.has(pct)) {
+        if (activePcts.size === 1) return;
+        activePcts.delete(pct);
+        el.classList.remove('active');
+      } else {
+        activePcts.add(pct);
+        el.classList.add('active');
+      }
+      render();
+    }
+
+    function formatPrice(num) {
+      if (num === null) return null;
+      // Determina casas decimais: usa o mesmo número de decimais do input ou mínimo 2
+      const input = document.getElementById('priceInput').value;
+      const decimalPart = input.includes('.') ? input.split('.')[1] : '';
+      const decimals = Math.max(2, decimalPart.length);
+      return num.toFixed(decimals).replace('.', ',');
+    }
+
+    function createRow(pct, price, type) {
+      const sign = type === 'gain' ? '+' : '-';
+      const result = type === 'gain' ? price * (1 + pct / 100) : price * (1 - pct / 100);
+      const formatted = formatPrice(result);
+      const raw = result.toString();
+
+      const row = document.createElement('div');
+      row.className = 'result-row';
+      row.onclick = () => copyValue(raw, formatted);
+
+      row.innerHTML = `
+        <div class="label">
+          <span class="badge ${type}">${sign}${pct}%</span>
+          <span class="row-desc">${type === 'gain' ? 'Stop Limit' : 'Stop Loss'}</span>
+        </div>
+        <span class="result-value ${type}">${formatted}</span>
+      `;
+      return row;
+    }
+
+    function createEmptyRow(pct, type) {
+      const sign = type === 'gain' ? '+' : '-';
+      const row = document.createElement('div');
+      row.className = 'result-row';
+      row.innerHTML = `
+        <div class="label">
+          <span class="badge ${type}">${sign}${pct}%</span>
+          <span class="row-desc">${type === 'gain' ? 'Stop Limit' : 'Stop Loss'}</span>
+        </div>
+        <span class="result-value empty">—</span>
+      `;
+      return row;
+    }
+
+    function render() {
+      const raw = document.getElementById('priceInput').value;
+      const price = parseFloat(raw);
+      const valid = !isNaN(price) && price > 0;
+
+      const sorted = [...activePcts].sort((a, b) => b - a);
+
+      const gainRows = document.getElementById('gainRows');
+      const lossRows = document.getElementById('lossRows');
+      gainRows.innerHTML = '';
+      lossRows.innerHTML = '';
+
+      sorted.forEach(pct => {
+        gainRows.appendChild(valid ? createRow(pct, price, 'gain') : createEmptyRow(pct, 'gain'));
+        lossRows.appendChild(valid ? createRow(pct, price, 'loss') : createEmptyRow(pct, 'loss'));
+      });
+    }
+
+    function copyValue(raw, formatted) {
+      const text = raw;
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(text).then(showToast);
+      } else {
+        const el = document.createElement('textarea');
+        el.value = text;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        showToast();
+      }
+    }
+
+    function showToast() {
+      const toast = document.getElementById('toast');
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 1800);
+    }
+
+    // Initial render with empty state
+    render();
+
+    // Register service worker
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+  </script>
+</body>
+</html>
