@@ -4,11 +4,15 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <meta name="apple-mobile-web-app-title" content="Crypto Stop" />
   <meta name="theme-color" content="#0f0f1a" />
   <link rel="manifest" href="manifest.json" />
   <link rel="apple-touch-icon" href="icon-192.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="icon-192.png" />
+  <link rel="apple-touch-icon" sizes="152x152" href="icon-192.png" />
+  <link rel="apple-touch-icon" sizes="120x120" href="icon-192.png" />
   <title>Crypto Stop Loss</title>
   <style>
     * {
@@ -26,7 +30,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      padding: env(safe-area-inset-top, 48px) 20px env(safe-area-inset-bottom, 24px);
+      padding: env(safe-area-inset-top, 48px) 20px calc(env(safe-area-inset-bottom, 0px) + 100px);
     }
 
     header {
@@ -274,6 +278,69 @@
       margin-top: 20px;
       line-height: 1.6;
     }
+
+    /* Install banner */
+    .install-banner {
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 12px);
+      left: 50%;
+      transform: translateX(-50%);
+      width: calc(100% - 32px);
+      max-width: 420px;
+      background: #1a1a2e;
+      border: 1px solid #a78bfa55;
+      border-radius: 18px;
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 8px 32px #0008;
+      z-index: 100;
+      animation: slideUp 0.4s ease;
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateX(-50%) translateY(30px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    .install-banner.hidden {
+      display: none;
+    }
+
+    .install-icon {
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+
+    .install-text {
+      flex: 1;
+      font-size: 12px;
+      line-height: 1.5;
+      color: #b0b0d0;
+    }
+
+    .install-text strong {
+      color: #e0e0f0;
+      font-size: 13px;
+    }
+
+    .install-text .arrow {
+      display: inline-block;
+      color: #60a5fa;
+      font-size: 13px;
+    }
+
+    .install-close {
+      background: none;
+      border: none;
+      color: #5a5a7a;
+      font-size: 18px;
+      cursor: pointer;
+      padding: 2px 4px;
+      flex-shrink: 0;
+      line-height: 1;
+    }
   </style>
 </head>
 <body>
@@ -303,8 +370,9 @@
 
     <div class="percentages">
       <div class="pct-chip active" data-pct="2" onclick="togglePct(this)">± 2%</div>
-      <div class="pct-chip active" data-pct="4" onclick="togglePct(this)">± 4%</div>
-      <div class="pct-chip active" data-pct="6" onclick="togglePct(this)">± 6%</div>
+      <div class="pct-chip active" data-pct="3" onclick="togglePct(this)">± 3%</div>
+      <div class="pct-chip" data-pct="4" onclick="togglePct(this)">± 4%</div>
+      <div class="pct-chip active" data-pct="5" onclick="togglePct(this)">± 5%</div>
       <div class="pct-chip" data-pct="8" onclick="togglePct(this)">± 8%</div>
       <div class="pct-chip" data-pct="10" onclick="togglePct(this)">± 10%</div>
       <div class="pct-chip" data-pct="15" onclick="togglePct(this)">± 15%</div>
@@ -327,8 +395,18 @@
 
   <div class="copy-toast" id="toast">Copiado!</div>
 
+  <div class="install-banner hidden" id="installBanner">
+    <div class="install-icon">&#128059;</div>
+    <div class="install-text">
+      <strong>Adicionar na tela inicial</strong><br/>
+      Toque em <span class="arrow">&#x2B06; Compartilhar</span> e depois em<br/>
+      <strong>"Adicionar à Tela de Início"</strong>
+    </div>
+    <button class="install-close" onclick="dismissBanner()" aria-label="Fechar">&#x2715;</button>
+  </div>
+
   <script>
-    let activePcts = new Set([2, 4, 6]);
+    let activePcts = new Set([2, 3, 5]);
 
     function onPriceInput() {
       const val = document.getElementById('priceInput').value;
@@ -437,6 +515,23 @@
       toast.classList.add('show');
       setTimeout(() => toast.classList.remove('show'), 1800);
     }
+
+    // Install banner: show on iOS Safari only when not already installed
+    function dismissBanner() {
+      document.getElementById('installBanner').classList.add('hidden');
+      try { sessionStorage.setItem('installDismissed', '1'); } catch(e) {}
+    }
+
+    (function checkInstallBanner() {
+      const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+      const isStandalone = window.navigator.standalone === true;
+      const dismissed = sessionStorage.getItem('installDismissed');
+      if (isIOS && !isStandalone && !dismissed) {
+        setTimeout(() => {
+          document.getElementById('installBanner').classList.remove('hidden');
+        }, 1500);
+      }
+    })();
 
     // Initial render with empty state
     render();
