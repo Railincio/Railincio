@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0F1117">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Stop Calc">
+<title>Stop Limit e Stop Loss</title>
+<style>
+  :root{
+    --bg:#0F1117; --card:#171A22; --line:#262B36;
+    --text:#E8ECF4; --mute:#7C879C; --up:#35D7A1; --down:#FF5A6E;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  body{
+    margin:0; padding:24px 16px 48px; background:var(--bg); color:var(--text);
+    font-family:system-ui,-apple-system,Segoe UI,sans-serif;
+  }
+  .wrap{max-width:460px; margin:0 auto}
+  h1{font-size:20px; text-align:center; margin:0}
+  .sub{text-align:center; color:var(--mute); font-size:13px; margin:4px 0 0}
+  .card{background:var(--card); border:1px solid var(--line); border-radius:14px}
+  .preco{display:flex; align-items:center; gap:8px; padding:12px 16px; margin-top:20px}
+  .preco span{font-family:var(--mono); color:var(--mute); font-size:18px}
+  .preco input{
+    flex:1; background:none; border:0; outline:0; color:var(--text);
+    font-family:var(--mono); font-size:26px; font-variant-numeric:tabular-nums; min-width:0;
+  }
+  .x{background:none; border:0; color:var(--mute); font-size:18px; padding:0 4px}
+  table{width:100%; border-collapse:collapse; margin-top:16px}
+  thead th{
+    font-size:10px; letter-spacing:.14em; text-transform:uppercase;
+    font-weight:600; padding:8px 12px; border-bottom:1px solid var(--line);
+  }
+  thead th:first-child{text-align:left; color:var(--mute)}
+  thead th.a{text-align:right; color:var(--up)}
+  thead th.q{text-align:right; color:var(--down)}
+  tbody td{
+    font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:13px;
+    padding:9px 12px; border-bottom:1px solid var(--line);
+  }
+  tbody tr:last-child td{border-bottom:0}
+  tbody td:first-child{color:var(--mute); width:56px}
+  tbody td.v{text-align:right; cursor:pointer}
+  tbody td.a{color:var(--up)} tbody td.q{color:var(--down)}
+  .hint{text-align:center; color:var(--mute); font-size:11px; margin:8px 0 0}
+  .cart{margin-top:24px; padding:16px}
+  .cabec{display:flex; align-items:baseline; justify-content:space-between}
+  .rot{font-size:10px; letter-spacing:.14em; text-transform:uppercase; color:var(--mute)}
+  .st{margin-left:8px; letter-spacing:0; text-transform:none}
+  .varia{font-family:var(--mono); font-size:15px}
+  svg{display:block; width:100%; height:auto; margin-top:12px}
+  .vazio{
+    height:140px; display:flex; align-items:center; justify-content:center;
+    color:var(--mute); font-size:12px; text-align:center; margin-top:12px;
+  }
+  .form{display:flex; gap:8px; margin-top:12px}
+  .form input{
+    background:var(--bg); border:1px solid var(--line); border-radius:10px; color:var(--text);
+    font-family:var(--mono); font-size:13px; padding:9px 10px; outline:0; min-width:0;
+  }
+  #data{width:132px} #valor{flex:1}
+  .add{background:var(--text); color:var(--bg); border:0; border-radius:10px; font-weight:700; font-size:18px; width:44px}
+  .chips{display:flex; flex-wrap:wrap; gap:6px; margin-top:12px}
+  .chip{
+    display:flex; align-items:center; gap:6px; background:var(--bg); border:1px solid var(--line);
+    border-radius:8px; padding:4px 8px; font-family:var(--mono); font-size:11px; color:var(--mute);
+  }
+  .chip button{background:none; border:0; color:var(--down); font-size:12px; padding:0}
+  .acoes{display:flex; flex-wrap:wrap; gap:8px; margin-top:20px}
+  .acoes button{
+    flex:1; background:none; border:1px solid var(--line); border-radius:10px; color:var(--mute);
+    font-size:11px; letter-spacing:.06em; text-transform:uppercase; padding:10px 6px;
+  }
+  .rodape{text-align:center; color:var(--mute); font-size:11px; margin-top:20px; line-height:1.6}
+  .toast{
+    position:fixed; left:50%; bottom:28px; transform:translateX(-50%) translateY(20px);
+    background:var(--text); color:var(--bg); border-radius:999px; padding:9px 18px;
+    font-size:13px; font-weight:600; opacity:0; transition:.2s; pointer-events:none;
+  }
+  .toast.on{opacity:1; transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Stop Limit e Stop Loss</h1>
+  <p class="sub">Variações pares de 4% a 20%</p>
+
+  <div class="card preco">
+    <span>R$</span>
+    <input id="preco" inputmode="decimal" placeholder="0,000000">
+    <button class="x" id="limpar">&#10005;</button>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr><th>Var.</th><th class="a">Alta</th><th class="q">Queda</th></tr>
+      </thead>
+      <tbody id="tabela"></tbody>
+    </table>
+  </div>
+  <p class="hint">Toque em qualquer valor para copiar.</p>
+
+  <div class="card cart">
+    <div class="cabec">
+      <span class="rot">Carteira<em class="st" id="status"></em></span>
+      <span class="varia" id="varia">0,00%</span>
+    </div>
+    <div id="grafico"></div>
+    <div class="form">
+      <input type="date" id="data">
+      <input id="valor" inputmode="decimal" placeholder="Valor">
+      <button class="add" id="add">+</button>
+    </div>
+    <div class="chips" id="chips"></div>
+  </div>
+
+  <div class="acoes">
+    <button id="link">Copiar link com os dados</button>
+    <button id="baixar">Baixar backup</button>
+    <button id="restaurar">Restaurar backup</button>
+  </div>
+  <input type="file" id="arquivo" accept=".json" hidden>
+
+  <p class="rodape">
+    Os dados ficam salvos neste navegador.<br>
+    Não constitui aconselhamento financeiro.
+  </p>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const FAIXAS = [4,6,8,10,12,14,16,18,20];
+const CHAVE = 'stop-carteira-v1';
+const HOJE = new Date().toISOString().slice(0,10);
+const COR = { up:'#35D7A1', down:'#FF5A6E', line:'#262B36', mute:'#7C879C' };
+
+const $ = id => document.getElementById(id);
+
+const num = v => {
+  let s = String(v).replace(/[^\d.,-]/g,'').trim();
+  s = s.includes(',') ? s.replace(/\./g,'').replace(',','.') : s;
+  const n = parseFloat(s);
+  return isNaN(n) ? 0 : n;
+};
+const fmt  = v => v.toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmt6 = v => v.toLocaleString('pt-BR',{minimumFractionDigits:6,maximumFractionDigits:6});
+const dm   = iso => iso.slice(8) + '/' + iso.slice(5,7);
+
+let estado = { preco:'100', pontos:[] };
+
+/* ---- persistência ---- */
+function salvar(){
+  try{
+    localStorage.setItem(CHAVE, JSON.stringify(estado));
+    aviso('salvo', COR.up);
+  }catch(e){ aviso('erro ao salvar', COR.down); }
+}
+function carregar(){
+  // 1) link compartilhado tem prioridade
+  if(location.hash.startsWith('#d=')){
+    try{
+      const d = JSON.parse(decodeURIComponent(escape(atob(location.hash.slice(3)))));
+      if(d && Array.isArray(d.pontos)){ estado = d; salvar(); return; }
+    }catch(e){}
+  }
+  try{
+    const d = JSON.parse(localStorage.getItem(CHAVE));
+    if(d && Array.isArray(d.pontos)) estado = d;
+  }catch(e){}
+}
+
+let timer;
+function aviso(txt, cor){
+  const el = $('status'); el.textContent = ' ' + txt; el.style.color = cor;
+  clearTimeout(timer); timer = setTimeout(()=>{ el.textContent=''; }, 1600);
+}
+function toast(txt){
+  const t = $('toast'); t.textContent = txt; t.classList.add('on');
+  setTimeout(()=>t.classList.remove('on'), 1300);
+}
+
+/* ---- tabela de stops ---- */
+function tabela(){
+  const p = num(estado.preco);
+  $('tabela').innerHTML = FAIXAS.map(f => {
+    const alta  = p*(1+f/100), queda = p*(1-f/100);
+    return '<tr><td>&plusmn; '+f+'%</td>'
+         + '<td class="v a" data-v="'+alta+'">'+fmt6(alta)+'</td>'
+         + '<td class="v q" data-v="'+queda+'">'+fmt6(queda)+'</td></tr>';
+  }).join('');
+}
+
+/* ---- gráfico ---- */
+function serie(){
+  return estado.pontos
+    .filter(p => p.data && num(p.valor) > 0)
+    .sort((a,b) => a.data.localeCompare(b.data))
+    .map(p => ({ data:p.data, v:num(p.valor) }));
+}
+function grafico(){
+  const s = serie(), box = $('grafico');
+  const ini = s[0]?.v || 0, fim = s[s.length-1]?.v || 0;
+  const varia = ini ? ((fim-ini)/ini)*100 : 0;
+  const cor = varia >= 0 ? COR.up : COR.down;
+  $('varia').textContent = (varia>=0?'+':'') + fmt(varia) + '%';
+  $('varia').style.color = cor;
+
+  if(s.length < 2){
+    box.innerHTML = '<div class="vazio">Adicione duas datas para ver a curva.</div>';
+    return;
+  }
+  const W=320,H=150,L=44,R=8,T=12,B=20;
+  let min = Math.min(...s.map(p=>p.v)), max = Math.max(...s.map(p=>p.v));
+  if(min===max){ min*=0.98; max*=1.02; }
+  const x = i => L + i*(W-L-R)/(s.length-1);
+  const y = v => T + (max-v)/(max-min)*(H-T-B);
+
+  const pts = s.map((p,i)=> x(i)+','+y(p.v)).join(' ');
+  const dots = s.map((p,i)=> '<circle cx="'+x(i)+'" cy="'+y(p.v)+'" r="2.6" fill="'+cor+'"/>').join('');
+  const ticks = [max,(max+min)/2,min].map(v =>
+      '<text x="'+(L-6)+'" y="'+(y(v)+3)+'" text-anchor="end" font-size="8" fill="'+COR.mute+'">'
+      + (v>=1000 ? (v/1000).toFixed(1)+'k' : fmt(v)) + '</text>'
+      + '<line x1="'+L+'" y1="'+y(v)+'" x2="'+(W-R)+'" y2="'+y(v)+'" stroke="'+COR.line+'"/>'
+    ).join('');
+  const eixo = s.map((p,i)=>
+      (i===0 || i===s.length-1 || s.length<=5)
+        ? '<text x="'+x(i)+'" y="'+(H-6)+'" text-anchor="middle" font-size="8" fill="'+COR.mute+'">'+dm(p.data)+'</text>'
+        : ''
+    ).join('');
+
+  box.innerHTML = '<svg viewBox="0 0 '+W+' '+H+'" font-family="ui-monospace, monospace">'
+    + ticks
+    + '<polyline points="'+pts+'" fill="none" stroke="'+cor+'" stroke-width="2" stroke-linejoin="round"/>'
+    + dots + eixo + '</svg>';
+}
+
+/* ---- lançamentos ---- */
+function chips(){
+  $('chips').innerHTML = serie().map(p =>
+    '<span class="chip">'+dm(p.data)+' &middot; '+fmt(p.v)
+    + '<button data-d="'+p.data+'">&#10005;</button></span>'
+  ).join('');
+}
+function render(){ tabela(); grafico(); chips(); }
+
+function add(){
+  const d = $('data').value, v = $('valor').value;
+  if(!d || num(v) <= 0){ aviso('preencha data e valor', COR.down); return; }
+  estado.pontos = estado.pontos.filter(p => p.data !== d).concat({ data:d, valor:v });
+  $('valor').value = '';
+  salvar(); render();
+}
+
+/* ---- eventos ---- */
+$('preco').addEventListener('input', e => { estado.preco = e.target.value; tabela(); salvar(); });
+$('limpar').addEventListener('click', () => { estado.preco=''; $('preco').value=''; tabela(); salvar(); });
+$('add').addEventListener('click', add);
+$('valor').addEventListener('keydown', e => { if(e.key==='Enter') add(); });
+
+$('tabela').addEventListener('click', e => {
+  const td = e.target.closest('td.v'); if(!td) return;
+  const txt = fmt6(parseFloat(td.dataset.v));
+  navigator.clipboard?.writeText(txt);
+  toast('Copiado: ' + txt);
+});
+$('chips').addEventListener('click', e => {
+  const b = e.target.closest('button'); if(!b) return;
+  estado.pontos = estado.pontos.filter(p => p.data !== b.dataset.d);
+  salvar(); render();
+});
+
+$('link').addEventListener('click', () => {
+  const url = location.origin + location.pathname
+    + '#d=' + btoa(unescape(encodeURIComponent(JSON.stringify(estado))));
+  navigator.clipboard?.writeText(url);
+  toast('Link copiado');
+});
+$('baixar').addEventListener('click', () => {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([JSON.stringify(estado,null,2)], {type:'application/json'}));
+  a.download = 'carteira-' + HOJE + '.json';
+  a.click(); URL.revokeObjectURL(a.href);
+});
+$('restaurar').addEventListener('click', () => $('arquivo').click());
+$('arquivo').addEventListener('change', e => {
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try{
+      const d = JSON.parse(r.result);
+      if(Array.isArray(d.pontos)){ estado = d; $('preco').value = d.preco || ''; salvar(); render(); toast('Backup restaurado'); }
+    }catch(err){ toast('Arquivo inválido'); }
+  };
+  r.readAsText(f);
+});
+
+/* ---- início ---- */
+carregar();
+$('preco').value = estado.preco || '';
+$('data').value = HOJE;
+render();
+</script>
+</body>
+</html>
